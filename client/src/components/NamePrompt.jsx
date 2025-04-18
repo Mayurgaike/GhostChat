@@ -1,113 +1,89 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Container,
-  Paper,
-  CircularProgress,
-} from '@mui/material';
+import { Box, Typography, Button, CircularProgress } from '@mui/material';
 
 const NamePrompt = ({ setUsername }) => {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Check for previously stored username on component mount
   useEffect(() => {
     const storedUsername = localStorage.getItem('ghostchat_username');
-    if (storedUsername) {
-      setName(storedUsername);
-    }
+    if (storedUsername) setName(storedUsername);
   }, []);
 
   const handleContinue = () => {
     if (name.trim()) {
       setLoading(true);
-      // Store username in localStorage
       localStorage.setItem('ghostchat_username', name.trim());
-      // Set username in app state
       setUsername(name.trim());
-      // Navigate to rooms page
-      setTimeout(() => {
-        navigate('/rooms');
-      }, 500);
+      setTimeout(() => navigate('/rooms'), 500);
     }
   };
 
   return (
-    <Container maxWidth="sm">
+    <Box
+      sx={{
+        height: '100vh',
+        width: '100vw',
+        background: 'linear-gradient(135deg, #0f0f0f, #1a0033)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        px: 2,
+      }}
+    >
       <Box
         sx={{
-          minHeight: '100vh',
-          backgroundColor: '#0e0e0e',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          py: 4,
+          width: '100%',
+          maxWidth: 400,
+          p: 4,
+          borderRadius: 4,
+          background: 'rgba(255, 255, 255, 0.05)',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 0 30px rgba(0, 0, 0, 0.5)',
+          textAlign:'center'
         }}
       >
-        <Paper
-          elevation={4}
+        <Typography color="white" fontSize={30} fontWeight={600} mb={2}>
+          Welcome !
+        </Typography>
+        <Box
+          component="input"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleContinue()}
+          placeholder="Enter your name..."
           sx={{
-            backgroundColor: '#1e1e1e',
-            padding: 4,
-            borderRadius: 3,
-            textAlign: 'center',
             width: '100%',
+            px: 2,
+            py: 1.5,
+            borderRadius: 2,
+            border: '1px solid #555',
+            outline: 'none',
+            background: 'rgba(255,255,255,0.1)',
+            color: 'white',
+            mb: 3,
+            fontSize: 16,
+            '&::placeholder': { color: '#aaa' },
           }}
+        />
+        <Button
+          variant="contained"
+          onClick={handleContinue}
+          fullWidth
+          sx={{
+            backgroundColor: '#a855f7',
+            textTransform: 'none',
+            fontWeight: 'bold',
+            '&:hover': { backgroundColor: '#9333ea' },
+          }}
+          disabled={!name.trim() || loading}
         >
-          <Typography variant="h4" sx={{ color: '#fff', mb: 3 }}>
-            Welcome to GhostChat
-          </Typography>
-          <Typography variant="body1" sx={{ color: '#bbb', mb: 3 }}>
-            Anonymous, secure, and ephemeral messaging without accounts
-          </Typography>
-          
-          <TextField
-            fullWidth
-            label="Enter your name"
-            variant="outlined"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleContinue()}
-            sx={{ 
-              input: { color: '#fff' }, 
-              mb: 2,
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                  borderColor: '#444',
-                },
-                '&:hover fieldset': {
-                  borderColor: '#666',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#9c27b0',
-                },
-              },
-            }}
-            InputLabelProps={{
-              style: { color: '#ccc' },
-            }}
-            disabled={loading}
-          />
-          
-          <Button
-            fullWidth
-            variant="contained"
-            color="primary"
-            onClick={handleContinue}
-            sx={{ mt: 2 }}
-            disabled={!name.trim() || loading}
-          >
-            {loading ? <CircularProgress size={24} color="inherit" /> : "Continue"}
-          </Button>
-        </Paper>
+          {loading ? <CircularProgress size={24} color="inherit" /> : 'Continue'}
+        </Button>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

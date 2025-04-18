@@ -28,7 +28,7 @@ const App = () => {
   return (
     <Routes>
       <Route path="/" element={
-        username ? <Navigate to="/rooms" /> : <NamePrompt setUsername={setUsername} />
+        <NamePrompt setUsername={setUsername} />
       } />
       <Route path="/rooms" element={
         <ProtectedRoute>

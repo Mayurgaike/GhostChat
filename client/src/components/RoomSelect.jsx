@@ -1,196 +1,164 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
-  Button,
   Typography,
-  TextField,
-  Stack,
+  Button,
+  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemButton,
-  Paper,
   CircularProgress,
-  Divider,
-  Avatar,
-  Container,
-  IconButton,
-} from "@mui/material";
-import RefreshIcon from '@mui/icons-material/Refresh';
-import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
+} from '@mui/material';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import socket from '../socket';
 
 const RoomSelect = ({ username }) => {
-  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
-  const [roomIdToJoin, setRoomIdToJoin] = useState("");
   const [availableRooms, setAvailableRooms] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+  const [roomIdToJoin, setRoomIdToJoin] = useState('');
   const navigate = useNavigate();
 
-  // Fetch available rooms on component mount
   useEffect(() => {
     const fetchRooms = () => {
       setLoading(true);
       socket.emit('get-available-rooms');
     };
-
     const handleAvailableRooms = (rooms) => {
       setAvailableRooms(rooms);
       setLoading(false);
     };
-
-    // Register event listeners
     socket.on('available-rooms', handleAvailableRooms);
-    
-    // Fetch rooms immediately
     fetchRooms();
-    
-    // Clean up listeners
-    return () => {
-      socket.off('available-rooms', handleAvailableRooms);
-    };
+    return () => socket.off('available-rooms', handleAvailableRooms);
   }, []);
 
   const handleCreateRoom = () => {
-    const randomId = Math.random().toString(36).substring(2, 8); // 6-char ID
+    const randomId = Math.random().toString(36).substring(2, 8);
     navigate(`/chat/${randomId}`);
   };
 
   const handleJoinRoom = () => {
-    if (roomIdToJoin.trim()) {
-      navigate(`/chat/${roomIdToJoin.trim()}`);
-    }
-  };
-
-  const handleRefreshRooms = () => {
-    setLoading(true);
-    socket.emit('get-available-rooms');
+    if (roomIdToJoin.trim()) navigate(`/chat/${roomIdToJoin.trim()}`);
   };
 
   return (
-    <Container maxWidth="sm">
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0f0f0f, #1a0033)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        px: 2,
+        color: 'white',
+      }}
+    >
+      <Typography fontSize={24} fontWeight={600} mb={4}>Heyy, {username}</Typography>
+      <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+        <Button
+          variant="contained"
+          startIcon={<AddCircleIcon />}
+          onClick={handleCreateRoom}
+          sx={{ backgroundColor: '#9333ea', fontWeight: 'bold', textTransform: 'none' }}
+        >
+          Create Room
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<MeetingRoomIcon />}
+          onClick={() => setJoinDialogOpen(true)}
+          sx={{ borderColor: '#9333ea', color: '#ccc', textTransform: 'none' }}
+        >
+          Join Room
+        </Button>
+      </Box>
       <Box
         sx={{
-          minHeight: '100vh',
-          backgroundColor: '#0e0e0e',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#fff',
-          gap: 3,
-          py: 4,
+          width: '100%',
+          maxWidth: 500,
+          p: 3,
+          borderRadius: 3,
+          background: 'rgba(255,255,255,0.05)',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 0 25px rgba(0,0,0,0.4)',
         }}
       >
-        <Typography variant="h4" sx={{ mb: 2 }}>Welcome, {username}</Typography>
-
-        <Stack spacing={2} direction="row" sx={{ mb: 4 }}>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            onClick={handleCreateRoom}
-            startIcon={<AddCircleIcon />}
-            size="large"
-          >
-            Create New Room
-          </Button>
-
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => setJoinDialogOpen(true)}
-            startIcon={<MeetingRoomIcon />}
-            size="large"
-          >
-            Join Room
-          </Button>
-        </Stack>
-
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            width: '100%', 
-            backgroundColor: '#1f1f1f',
-            borderRadius: 2,
-            overflow: 'hidden',
-          }}
-        >
-          <Box 
-            sx={{ 
-              p: 2, 
-              display: 'flex', 
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              borderBottom: '1px solid #333'
-            }}
-          >
-            <Typography variant="h6">Available Rooms</Typography>
-            <IconButton onClick={handleRefreshRooms} color="primary">
-              <RefreshIcon />
-            </IconButton>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+          <Typography fontSize={18}>Available Rooms</Typography>
+          <IconButton onClick={() => socket.emit('get-available-rooms')} sx={{ color: '#ccc' }}>
+            <RefreshIcon />
+          </IconButton>
+        </Box>
+        {loading ? (
+          <Box sx={{ textAlign: 'center', py: 3 }}>
+            <CircularProgress />
           </Box>
-          
-          {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-              <CircularProgress />
-            </Box>
-          ) : availableRooms.length === 0 ? (
-            <Box sx={{ p: 4, textAlign: 'center' }}>
-              <Typography variant="body1" color="text.secondary">
-                No active rooms available. Create a new one!
-              </Typography>
-            </Box>
-          ) : (
-            <List sx={{ maxHeight: '300px', overflowY: 'auto' }}>
-              {availableRooms.map((room) => (
-                <React.Fragment key={room.roomId}>
-                  <ListItemButton onClick={() => navigate(`/chat/${room.roomId}`)}>
-                    <ListItem>
-                      <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
-                        {room.userCount}
-                      </Avatar>
-                      <ListItemText 
-                        primary={`Room: ${room.roomId}`} 
-                        secondary={`${room.userCount} user${room.userCount !== 1 ? 's' : ''} online`}
-                        secondaryTypographyProps={{ color: '#aaa' }}
-                      />
-                    </ListItem>
-                  </ListItemButton>
-                  <Divider sx={{ bgcolor: '#333' }} />
-                </React.Fragment>
-              ))}
-            </List>
-          )}
-        </Paper>
-
-        <Dialog open={joinDialogOpen} onClose={() => setJoinDialogOpen(false)}>
-          <DialogTitle>Enter Room ID</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              fullWidth
-              margin="dense"
-              label="Room ID"
-              value={roomIdToJoin}
-              onChange={(e) => setRoomIdToJoin(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleJoinRoom()}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setJoinDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleJoinRoom} variant="contained">Join</Button>
-          </DialogActions>
-        </Dialog>
+        ) : availableRooms.length === 0 ? (
+          <Typography color="#aaa" textAlign="center">
+            No active rooms available. Create a new one!
+          </Typography>
+        ) : (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {availableRooms.map((room) => (
+              <Button
+                key={room.roomId}
+                onClick={() => navigate(`/chat/${room.roomId}`)}
+                sx={{
+                  background: 'rgba(255,255,255,0.1)',
+                  color: 'white',
+                  borderRadius: 20,
+                  px: 3,
+                  '&:hover': {
+                    background: 'rgba(255,255,255,0.2)',
+                  },
+                }}
+              >
+                {room.roomId} ({room.userCount})
+              </Button>
+            ))}
+          </Box>
+        )}
       </Box>
-    </Container>
+
+      <Dialog open={joinDialogOpen} onClose={() => setJoinDialogOpen(false)}>
+        <Box sx={{background: 'linear-gradient(135deg, #1a0033, #0f0f0f)', color:'#ccc'}}>
+        <DialogTitle>Enter Room ID</DialogTitle>
+        <DialogContent>
+          <Box
+            component="input"
+            autoFocus
+            placeholder="Room ID"
+            value={roomIdToJoin}
+            onChange={(e) => setRoomIdToJoin(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleJoinRoom()}
+            sx={{
+              width: '100%',
+              px: 2,
+              py: 1.5,
+              borderRadius: 2,
+              border: '1px solid #555',
+              outline: 'none',
+              background: '#222',
+              color: 'white',
+              fontSize: 16,
+              '&::placeholder': { color: '#aaa' },
+              mt: 1,
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setJoinDialogOpen(false)} sx={{color:"#ccc"}}>Cancel</Button>
+          <Button onClick={handleJoinRoom} sx={{color:'#A855F7'}}>Join</Button>
+        </DialogActions>
+        </Box>
+      </Dialog>
+    </Box>
   );
 };
 
