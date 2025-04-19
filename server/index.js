@@ -11,11 +11,15 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server, {
   cors: {
-    origin: "http://localhost:5500",
+    origin: [
+      "http://localhost:5500",
+      "https://ghostchat-1.onrender.com"
+    ],
     methods: ["GET", "POST"]
   },
-  maxHttpBufferSize: 5e6 // 5MB max file size
+  maxHttpBufferSize: 5e6
 });
+
 
 app.use(cors());
 app.use(express.json());
