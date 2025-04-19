@@ -11,7 +11,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server, {
   cors: {
-    origin: "http://localhost:5500",
+    origin: "*",
     methods: ["GET", "POST"]
   },
   maxHttpBufferSize: 5e6 // 5MB max file size

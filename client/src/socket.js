@@ -1,7 +1,7 @@
 import { io } from 'socket.io-client';
 
 // Create the socket connection with reconnection capability
-const socket = io('http://localhost:3500', {
+const socket = io('https://ghostchat-i1e8.onrender.com', {
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
   autoConnect: true,
